@@ -6,7 +6,7 @@ import { Element } from './elements';
 
 export class Game {
     private scene!: THREE.Scene;
-    private camera!: THREE.PerspectiveCamera;
+    public camera!: THREE.PerspectiveCamera;
     private renderer!: THREE.WebGLRenderer;
     private timer: number = 0;
     private timerElement!: HTMLElement;
@@ -58,7 +58,6 @@ export class Game {
     }
 
     public removeElement(element: Element) {
-        console.log("im inside remove");
         this.scene.remove(element.mesh);
         if (element instanceof Collect) {
             this.collectElementsLeft--;

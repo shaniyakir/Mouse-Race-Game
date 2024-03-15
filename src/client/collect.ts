@@ -31,14 +31,7 @@ export class Collect implements Element {
         this.mesh = new THREE.Mesh(geometry, material);
     }
 
-    changeDirection() {
-        // Change direction to a random direction
-        this.direction.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
-    }
-
     toggleBehavior() {
-        console.log("inside toggle");
-        // Change movement direction every 2 seconds
         const directions = [
             new THREE.Vector3(1, 0, 0),   // Right
             new THREE.Vector3(-1, 0, 0),  // Left
@@ -47,39 +40,60 @@ export class Collect implements Element {
             new THREE.Vector3(0, 0, 1),   // Forwards
             new THREE.Vector3(0, 0, -1),  // Backwards
         ];
-        this.direction = directions[Math.floor(Math.random() * directions.length)];
+    
+        // Get the screen position of the object
+        const screenPosition = new THREE.Vector3();
+        screenPosition.copy(this.mesh.position);
+        screenPosition.project(game.camera);
+        
+    
+        // Check if the object is at or near the right edge of the screen
+        const isAtRightEdge = Math.abs(screenPosition.x) > 0.5;
+    
+        // Filter out the right direction if the object is at the right edge of the screen
+        const filteredDirections = isAtRightEdge ? directions.filter(direction => direction.x !== 1) : directions;
+    
+        // Select a random direction from the filtered directions
+        this.direction = filteredDirections[Math.floor(Math.random() * filteredDirections.length)];
     }
+    
 
     move() {
         // Move the element in the current direction
         const speed = 0.01; // Adjust speed as needed
 
+        const screenWidth = window.screen.availWidth;
+        const screenHeight = window.screen.availHeight;
+
+        window.resizeTo(screenWidth, screenHeight);
+
+
             // Limit movement within the screen bounds
-        const screenSize = new THREE.Vector2(window.innerWidth, window.innerHeight);
+        // const screenSize = new THREE.Vector2(screenWidth, screenHeight);
 
-        const elementSize = new THREE.Vector3();
+        // const elementSize = new THREE.Vector3();
 
-        let x = this.mesh.position.x;
-        let y = this.mesh.position.y;
+        // let x = this.mesh.position.x;
+        // let y = this.mesh.position.y;
 
-        if (x + elementSize.x / 2 > screenSize.x / 2) {
-            this.mesh.position.x = screenSize.x / 2 - elementSize.x / 2;
-        } else if (x - elementSize.x / 2 < -screenSize.x / 2) {
-            this.mesh.position.x = -screenSize.x / 2 + elementSize.x / 2;
-        }
+        // if (x + elementSize.x / 2 > screenWidth / 100) {
+        //     this.mesh.position.x = screenWidth / 2 - elementSize.x / 2;
+        // } else if (x - elementSize.x / 2 < -screenWidth / 100) {
+        //     this.mesh.position.x = -screenWidth / 2 + elementSize.x / 2;
+        // }
     
-        if (y + elementSize.y / 2 > screenSize.y / 2) {
-            this.mesh.position.y = screenSize.y / 2 - elementSize.y / 2;
-        } else if (y - elementSize.y / 2 < -screenSize.y / 2) {
-            this.mesh.position.y = -screenSize.y / 2 + elementSize.y / 2;
-        }
+        // if (y + elementSize.y / 2 > screenHeight / 100) {
+        //     this.mesh.position.y = screenHeight / 2 - elementSize.y / 2;
+        // } else if (y - elementSize.y / 2 < -screenHeight / 100) {
+        //     this.mesh.position.y = -screenHeight / 2 + elementSize.y / 2;
+        // }
         this.mesh.position.addScaledVector(this.direction, speed);
     
     }
 
     onClick() {
         // Remove the collectible element when clicked
-        game.removeElement(this);
+        game.removeElement(this);   
     }
 
     dispose() {
