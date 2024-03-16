@@ -10,11 +10,11 @@ export class Change implements Element {
     behaviorTimer: NodeJS.Timeout;
 
     constructor(scene: THREE.Scene) {
-        this.size = Math.random(); // Example for size initialization
+        this.size = Math.random(); 
         this.rotationSpeed = 0.01; // Rotation speed in radians per frame
         this.isCollectible = false; // Initially set as avoidable
         this.createMesh();
-        this.setInitialPosition(); // Set initial random position
+        this.setInitialPosition(); 
         scene.add(this.mesh);
         this.mesh.userData.element = this;
 
@@ -29,7 +29,6 @@ export class Change implements Element {
 
     createMesh() {
         const geometry = new THREE.CylinderGeometry(0, this.size, this.size, 4);
-        //const material = new THREE.MeshBasicMaterial({ color: this.isCollectible ? 0x00ff00 : 0xff0000, transparent: true, wireframe: true });
         const material = new THREE.MeshBasicMaterial({ color: this.isCollectible ? 0x00ff00 : 0xff0000 }); // Green or red
         this.mesh = new THREE.Mesh(geometry, material);
     }
@@ -37,33 +36,25 @@ export class Change implements Element {
 
     toggleBehavior() {
         this.toggleColor();
-    
         // Rotate the mesh clockwise
         const rotationDegree = -1; // Adjust rotation speed as needed
-    
-        // Apply rotation
-        const axis = new THREE.Vector3(0, 0, 1); // Rotate around the y-axis (up direction)
+        const axis = new THREE.Vector3(0, 0, 1); // Rotate around the z-axis 
         this.mesh.rotateOnAxis(axis, rotationDegree);
     }
     
-
     toggleColor() {
-        this.isCollectible = !this.isCollectible; // Toggle between collectible and avoidable
+        this.isCollectible = !this.isCollectible; 
         const color = this.isCollectible ? 0x00ff00 : 0xff0000; // Green or red
         (this.mesh.material as THREE.MeshBasicMaterial).color.set(color);
     }
 
-    // move(){
-    //     this.mesh.rotateX = (1,0,0);
-    // }
-
     onClick() {
         if (this.isCollectible) {
             // If it's collectible (green), remove it
-            game.removeElement(this);
+            game?.removeElement(this);
         } else {
             // If it's avoidable (red), trigger game over
-            game.gameOver(false);
+            game?.gameOver(false);
         }
     }
 

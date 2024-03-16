@@ -11,7 +11,8 @@ export class Game {
     private timer: number = 0;
     private timerElement!: HTMLElement;
     private collectElementsLeft: number = 0;
-    private changeElementsLeft: number = 0;
+    private animationId: number | null = null; // Variable to store the animation request ID
+
 
     constructor() {
         this.initScene();
@@ -42,65 +43,50 @@ export class Game {
     
 
     private createElements() {
-        // Example: Create 5 Collect elements and 3 Change elements
-        for (let i = 0; i < 6; i++) {
-            const collectElement = new Collect(this.scene);
+        // Example- Create 3 Collect elements ,2 Change elements and 3 Avoid elements
+        for (let i = 0; i < 3; i++) {
+            new Collect(this.scene);
             this.collectElementsLeft++;
         }
         for (let i = 0; i < 3; i++) {
-            const changeElement = new Avoid(this.scene);
-            this.changeElementsLeft++;
+            new Avoid(this.scene);
         }
-        for (let i = 0; i < 3; i++) {
-            const changeElement = new Change(this.scene);
-            this.changeElementsLeft++;
+        for (let i = 0; i < 2; i++) {
+            new Change(this.scene);
+            this.collectElementsLeft++;
         }
+        console.log("num of items:" + this.collectElementsLeft)
     }
 
     public removeElement(element: Element) {
         this.scene.remove(element.mesh);
-        if (element instanceof Collect) {
+        if (element.isCollectible) {
             this.collectElementsLeft--;
-        } else if (element instanceof Change) {
-            this.changeElementsLeft--;
+        }else{
+            this.gameOver(false); // lose
         }
-        if (this.collectElementsLeft === 0 && this.changeElementsLeft === 0) {
+        if (this.collectElementsLeft === 0 ) {
             this.gameOver(true); // Victory
         }
+        console.log(this.collectElementsLeft)
     }
 
-    public gameOver(isVictory: boolean) {
-        if (isVictory) {
-            console.log('Congratulations! You won!');
-        } else {
-            console.log('Game over! You lost.');
-        }
-        // Additional game over logic (e.g., display message, reset game)
-    }
-
-    private animate() {
+    private animate = () => {
         this.timer++;
         this.timerElement.innerText = `Time: ${Math.floor(this.timer / 60)}s`;
-            // Move each collect element
+    
+        // Move each collect element
         this.scene.traverse((child) => {
-            if (child.userData.element instanceof Avoid) {
+            if (child.userData.element instanceof Avoid || child.userData.element instanceof Collect) {
                 child.userData.element.move();
             }
-            else if (child.userData.element instanceof Collect){
-                child.userData.element.move();
-            }
-
-            else{
-                //child.userData.element.move();
-            }
-            
         });
-        // Update element positions, handle interactions, etc.
-
+    
         this.renderer.render(this.scene, this.camera);
-        requestAnimationFrame(this.animate.bind(this));
-    }
+        this.animationId = requestAnimationFrame(this.animate); // Request the next animation frame
 
+    };
+    
     private onMouseClick(event: MouseEvent) {
         let mouse = new THREE.Vector2();
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -118,6 +104,71 @@ export class Game {
 
                 document.addEventListener('click', element.onClick(event));
             }
+        }
+    }
+
+    public gameOver(isVictory: boolean) {
+        this.stopAnimation();
+        this.showPopup(isVictory);
+    }
+    
+
+    stopAnimation() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+    
+    showPopup(victory: boolean) {
+        let message = '';
+        if (victory) {
+            message = 'Congratulations! You won!\nClick to play again.';
+        } else {
+            message = 'Game Over!\nClick to play again.';
+        }
+    
+        // Create the popup container
+        const popupContainer = document.createElement('div');
+        popupContainer.classList.add('popup-container');
+    
+        // Create the popup message element
+        const popupMessage = document.createElement('div');
+        popupMessage.innerText = message;
+        popupMessage.classList.add('popup-message');
+
+        // Append the popup message to the popup container
+        popupContainer.appendChild(popupMessage);
+
+        // Append the popup container to the document body
+        document.body.appendChild(popupContainer);
+    
+        // Add click event listener to restart the game
+        popupMessage.addEventListener('click', (event) => {
+            // Stop event propagation to prevent triggering the click event listener on the container
+            event.stopPropagation();
+            // Remove the popup container
+            document.body.removeChild(popupContainer);
+            this.startOver();
+        });
+    }    
+        
+     startGame() {
+        this.animationId = requestAnimationFrame(this.animate);
+    }
+
+    public startOver() {
+        this.timer = 0;
+        this.collectElementsLeft = 0;
+        this.removeChildren(this.scene);
+        this.createElements();
+        this.startGame();
+    }
+
+    removeChildren(object: THREE.Object3D) {
+        while (object.children.length > 0) {
+            this.removeChildren(object.children[0]);
+            object.remove(object.children[0]);
         }
     }
 }

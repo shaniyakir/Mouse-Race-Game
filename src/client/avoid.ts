@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Element } from './elements';
-import { game } from './index'; // Assuming the file name is 'game.ts'
+import { game } from './index'; 
 
 export class Avoid implements Element {
     mesh!: THREE.Mesh;
@@ -11,7 +11,7 @@ export class Avoid implements Element {
     constructor(scene: THREE.Scene) {
         this.direction = new THREE.Vector3(Math.random() - 0.5, 0, 0).normalize(); // Initial direction (random left or right)
         this.createMesh();
-        this.setInitialPosition(); // Set initial random position
+        this.setInitialPosition(); 
         scene.add(this.mesh);
         this.mesh.userData.element = this;
 
@@ -40,7 +40,6 @@ export class Avoid implements Element {
 
 
     toggleBehavior() {
-        console.log("inside toggle");
         // Change movement direction every 2 seconds
         const directions = [
             new THREE.Vector3(1, 0),   // Right
@@ -53,33 +52,12 @@ export class Avoid implements Element {
     move() {
         // Move the element in the current direction
         const speed = 0.01; // Adjust speed as needed
-
-            // Limit movement within the screen bounds
-        const screenSize = new THREE.Vector2(window.innerWidth, window.innerHeight);
-
-        const elementSize = new THREE.Vector3();
-
-        let x = this.mesh.position.x;
-        let y = this.mesh.position.y;
-
-        if (x > screenSize.x -10) {
-            this.mesh.position.x = screenSize.x / 2 - elementSize.x / 2;
-        } else if (x - elementSize.x / 2 < -screenSize.x / 2) {
-            this.mesh.position.x = -screenSize.x / 2 + elementSize.x / 2;
-        }
-    
-        if (y + elementSize.y / 2 > screenSize.y / 2) {
-            this.mesh.position.y = screenSize.y / 2 - elementSize.y / 2;
-        } else if (y - elementSize.y / 2 < -screenSize.y / 2) {
-            this.mesh.position.y = -screenSize.y / 2 + elementSize.y / 2;
-        }
-        this.mesh.position.addScaledVector(this.direction, speed);
-    
+        this.mesh.position.addScaledVector(this.direction, speed); 
     }
 
     onClick() {
         // Trigger game over if clicked
-        game.gameOver(false);
+        game?.gameOver(false);
     }
 
     dispose() {
